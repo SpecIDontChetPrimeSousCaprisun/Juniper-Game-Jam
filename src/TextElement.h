@@ -1,0 +1,23 @@
+#pragma once
+
+#include "UIElement.h"
+#include "Font.h"
+
+class TextElement : public UIElement {
+public:
+  TextElement(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex, std::string text, std::string fontPath, glm::vec3 textColor);
+
+  static void initShader();
+
+  std::string text;
+  Font* font;
+  glm::vec3 textColor;
+  float textWidth;
+  bool textCentered;
+protected:
+  void afterDrawing(drawInfo* info) override;
+private:
+  static unsigned int shaderProgram;
+
+  unsigned int VAO, VBO;
+};
