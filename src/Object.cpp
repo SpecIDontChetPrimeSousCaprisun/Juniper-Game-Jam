@@ -194,6 +194,8 @@ void Object::init() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 
+  colorChange = glm::vec3(0.0f, 0.0f, 0.0f);
+
   objects[zIndex].push_back(this);
 }
 
@@ -296,6 +298,11 @@ void Object::draw() {
   glUniform1f(
       glGetUniformLocation(shaderProgram, "alpha"),
       1 - transparency
+  );
+
+  glUniform3f(
+      glGetUniformLocation(shaderProgram, "colorChange"),
+      colorChange.x, colorChange.y, colorChange.z
   );
 
   // ===== TEXTURE =====

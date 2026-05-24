@@ -4,6 +4,7 @@
 #include "Container.h"
 #include "UIElement.h"
 #include "TextElement.h"
+#include "Button.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,6 +16,7 @@ GLFWwindow* Window::window = nullptr;
 double Window::deltaTime = 0;
 int Window::fbWidth = 600;
 int Window::fbHeight = 480;
+bool Window::inGame = true;
 
 double lastFrame = 0.0;
 bool toggledMenu = false;
@@ -69,21 +71,28 @@ int Window::init() {
   return 0;
 }
 
-void Window::mainLoop() {
+void Window::mainLoop() { 
   std::vector<Object*> menuElements;
   
   UIElement* menuBackground = new UIElement(glm::vec2(0.5f, 0.5f), glm::vec2(0.5f, 0.75f), 0.0f, "textures/Wallpaper.jpeg", 1);
   TextElement* nameLabel = new TextElement(glm::vec2(0.5f, 0.1f), glm::vec2(0.5f, 0.1f), 1.0f, "textures/Wallpaper.jpeg", 2, "GAME NAME HERE", "fonts/Kenney Future Narrow.ttf", glm::vec3(0.0f, 0.0f, 0.0f));
+  Button* exitButton = new Button(glm::vec2(0.5f, 0.9f), glm::vec2(0.5f, 0.1f), 0.0f, "textures/Wallpaper.jpeg", 2, "Exit", "fonts/Kenney Future Narrow.ttf", glm::vec3(1.0f, 0.0f, 0.0f));
+
+  exitButton->setCallback([]() {
+    inGame = false;
+  });
 
   menuBackground->anchorPoint = glm::vec2(0.5f, 0.5f);
   nameLabel->anchorPoint = glm::vec2(0.5f, 0.0f);
+  exitButton->anchorPoint = glm::vec2(0.5f, 1.0f);
   menuElements.push_back(menuBackground);
   menuElements.push_back(nameLabel);
+  menuElements.push_back(exitButton);
 
   Container* menu = new Container(menuElements);
   menu->changeVisibility(false);
   
-  while (!glfwWindowShouldClose(window)){
+  while (!glfwWindowShouldClose(window) && inGame){
     if (resizing) {
       glfwPollEvents();
       glfwSwapBuffers(window);

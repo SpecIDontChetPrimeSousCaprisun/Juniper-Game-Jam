@@ -8,5 +8,6 @@ public:
 
   glm::vec2 anchorPoint;
 protected:
-  drawInfo* beforeDrawing(drawInfo* info) override;
+  virtual drawInfo* beforeDrawing(drawInfo* info) override;
+  drawInfo* baseBeforeDrawing(drawInfo* info); 
 };

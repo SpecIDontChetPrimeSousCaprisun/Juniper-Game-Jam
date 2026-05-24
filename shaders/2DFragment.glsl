@@ -5,14 +5,15 @@ in vec2 TexCoord;
 out vec4 FragColor;
 
 uniform float alpha;
-
 uniform sampler2D tex;
+uniform vec3 colorChange;
 
 void main()
 {
-  vec4 finalColor;
+    vec4 finalColor = texture(tex, TexCoord);
 
-  finalColor = texture(tex, TexCoord);
-
-  FragColor = vec4(finalColor.x, finalColor.y, finalColor.z, alpha);
+    FragColor = vec4(
+        finalColor.rgb + colorChange,
+        finalColor.a * alpha
+    );
 }

@@ -43,6 +43,8 @@ public:
 protected:
   virtual drawInfo* beforeDrawing(drawInfo* info);
   virtual void afterDrawing(drawInfo* info);
+
+  glm::vec3 colorChange;
 private:
   static std::map<int, std::vector<Object*>> objects;
   static unsigned int shaderProgram;

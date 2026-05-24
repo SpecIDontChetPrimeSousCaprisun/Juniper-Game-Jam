@@ -164,6 +164,11 @@ void TextElement::afterDrawing(drawInfo* info) {
       textColor.r, textColor.g, textColor.b
   );
 
+  glUniform3f(
+      glGetUniformLocation(shaderProgram, "colorChange"),
+      colorChange.r, colorChange.g, colorChange.b
+  );
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, font->texture);
 

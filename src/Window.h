@@ -13,4 +13,5 @@ public:
 
   static double deltaTime;
   static int fbWidth, fbHeight;
+  static bool inGame;
 };
