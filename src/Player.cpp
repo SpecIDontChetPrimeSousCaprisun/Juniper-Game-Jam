@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Window.h"
 #include "Particle.h"
+#include "Sound.h"
 
 Player* Player::currentPlayer;
 
@@ -23,19 +24,23 @@ void Player::update() {
 
   Object* result = Object::raycast(
     currentPlayer->position + glm::vec2(currentPlayer->size.x / 2, 0.0f),
-    glm::vec2(0.0f, 5.0f + currentPlayer->size.y),
+    glm::vec2(0.0f, 0.01f + currentPlayer->size.y),
     hitPoint,
     tHit,
     ignore
   );
 
   if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && result) {
-    currentPlayer->linearVelocity -= glm::vec2(0.0f, 75.0f);
+    currentPlayer->linearVelocity -= glm::vec2(0.0f, 400.0f);
   
     glm::vec2 particlePos = currentPlayer->position;
     particlePos += glm::vec2(currentPlayer->size.x / 2, currentPlayer->size.y);
 
-    new Particle(particlePos, glm::vec2(25.0f, 25.0f), 0.5f, "textures/Wallpaper.jpeg", glm::vec2(0.0f, -250.0f), 100.0f, 1.5f);
+    Sound::playSound("sfx/jump.wav");
+
+    for (int i = 0; i <= 5; i++) {
+      new Particle(particlePos, glm::vec2(25.0f, 25.0f), 0.5f, "textures/Wallpaper.jpeg", glm::vec2(0.0f, -100.0f), 100.0f, 0.5f);
+    }
   }
 
   if (glfwGetKey(Window::window, GLFW_KEY_D) == GLFW_PRESS) {

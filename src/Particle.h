@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include <random>
 
 class Particle : public Object {
 public:
@@ -9,6 +10,8 @@ public:
 protected:
   void afterUpdate() override;
 private:
+  static std::mt19937 rng;
+
   glm::vec2 direction;
   float spread, lifetime;
 };
