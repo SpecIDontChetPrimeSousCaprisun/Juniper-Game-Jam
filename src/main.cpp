@@ -18,7 +18,7 @@ int main() {
 
   new Player(glm::vec2(0.0f, 0.0f), glm::vec2(100.0f, 100.0f), 0.0f, "textures/player.png", 2, true);
   Object* obj2 = new Object(glm::vec2(300.0f, 0.0f), glm::vec2(100.0f, 100.0f), 0.0f, "textures/box.png", 2);
-  Object* platform = new Object(glm::vec2(0.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, "textures/Wallpaper.jpeg", 1);
+  Object* platform = new Object(glm::vec2(-500.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, "textures/Wallpaper.jpeg", 1);
 
   obj2->anchored = false;
   obj2->canCollide = true;

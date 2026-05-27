@@ -10,12 +10,30 @@ std::map<int, std::vector<Object*>> Object::objects;
 drawInfo::drawInfo(glm::vec2 position, glm::vec2 size)
   : position(position), size(size) {}
 
+void Object::deletePendingObjects() {
+  for (auto& [zIndex, objectsVector] : objects) {
+    for (auto it = objectsVector.begin(); it != objectsVector.end(); ) {
+      Object* object = *it;
+
+      if (object->pendingDelete) {
+        it = objectsVector.erase(it);
+        delete object;
+      }
+      else {
+        ++it;
+      }
+    }
+  }
+}
+
 void Object::drawAll() {
   for (auto& [zIndex, objectsVector] : objects) {
     for (Object* object : objectsVector) {
       object->draw();
     }
   }
+
+  deletePendingObjects();
 }
 
 void Object::updateAll() {
@@ -24,6 +42,8 @@ void Object::updateAll() {
       object->update();
     }
   }
+
+  deletePendingObjects();
 }
 
 void Object::initShader() {
@@ -200,19 +220,11 @@ void Object::init() {
 }
 
 Object::Object(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex) 
-  : position(position), size(size), linearVelocity(glm::vec2(0.0f, 0.0f)), transparency(transparency), texture(FileLoader::loadTexture(texPath)), zIndex(zIndex), visible(true), anchored(true), canCollide(false), rotation(0) {
+  : position(position), size(size), linearVelocity(glm::vec2(0.0f, 0.0f)), transparency(transparency), texture(FileLoader::loadTexture(texPath)), zIndex(zIndex), visible(true), anchored(true), canCollide(false), rotation(0), pendingDelete(false) {
     init();
 }
 
 Object::~Object() {
-  std::cout << "deleted\n";
-
-  auto& vec = objects[zIndex];
-
-  vec.erase(
-      std::remove(vec.begin(), vec.end(), this),
-      vec.end()
-  );
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   glDeleteTextures(1, &texture);
@@ -325,10 +337,13 @@ void Object::draw() {
   delete newInfo;
 }
 
-void Object::update() {
-  //std::cout << Window::deltaTime << "\n";
+void Object::beforeUpdate() {}
+void Object::afterUpdate() {}
 
-  if (!anchored) { 
+void Object::update() {
+  beforeUpdate();
+
+  if (!anchored) {  
     linearVelocity += glm::vec2(0.0f, 500.0f * (float)Window::deltaTime);
 
     position.x += linearVelocity.x * Window::deltaTime;
@@ -377,6 +392,8 @@ void Object::update() {
       }
     }
   }
+
+  afterUpdate();
 }
 
 Object* Object::raycast(

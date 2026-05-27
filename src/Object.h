@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <algorithm>
 
 struct drawInfo {
 public:
@@ -43,11 +44,16 @@ public:
 protected:
   virtual drawInfo* beforeDrawing(drawInfo* info);
   virtual void afterDrawing(drawInfo* info);
+  virtual void beforeUpdate();
+  virtual void afterUpdate();
 
   glm::vec3 colorChange;
+  bool pendingDelete;
 private:
   static std::map<int, std::vector<Object*>> objects;
   static unsigned int shaderProgram;
+
+  static void deletePendingObjects();
 
   unsigned int VAO, VBO, texture;
 

@@ -52,7 +52,8 @@ SRC = src/stbImpl.cpp \
 			src/Font.cpp \
 			src/TextElement.cpp \
 			src/Container.cpp \
-			src/Button.cpp
+			src/Button.cpp \
+			src/Particle.cpp
 
 
 PUBLISH_SRC = textures \
