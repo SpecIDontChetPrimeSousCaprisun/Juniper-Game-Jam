@@ -1,8 +1,7 @@
-#version 330 core
+#version 100
+precision mediump float;
 
-in vec2 TexCoord;
-
-out vec4 FragColor;
+varying vec2 TexCoord;
 
 uniform sampler2D tex;
 uniform vec3 color;
@@ -10,7 +9,6 @@ uniform vec3 colorChange;
 
 void main()
 {
-    float alpha = texture(tex, TexCoord).r;
-
-    FragColor = vec4(color + colorChange, alpha);
+    float alpha = texture2D(tex, TexCoord).r;
+    gl_FragColor = vec4(color + colorChange, alpha);
 }

@@ -1,9 +1,15 @@
+PROJECT_NAME = test-project
+ITCHIO_USER = puroprimesouscaprisun
+
+# CXX
 CXX = g++
 WIN_CXX = x86_64-w64-mingw32-g++
+EMCC = em++
 
 # Targets
 TARGET = game
 WIN_TARGET = publish/windows/game.exe
+WEB_TARGET = publish/web/index.html
 
 WINDOWS_DLLS = /usr/x86_64-w64-mingw32/bin/glfw3.dll \
 							 /usr/x86_64-w64-mingw32/bin/libassimp.dll \
@@ -15,7 +21,25 @@ WINDOWS_DLLS = /usr/x86_64-w64-mingw32/bin/glfw3.dll \
 
 # Flags
 CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
-WINDOWS_CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude 
+WINDOWS_CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
+
+WEB_CXXFLAGS = \
+-std=c++17 \
+-Wall \
+-Wextra \
+-Iinclude \
+-s USE_GLFW=3 \
+-s USE_SDL=2 \
+-s FULL_ES3=1 \
+-s WASM=1 \
+-s ALLOW_MEMORY_GROWTH=1 \
+-s ASSERTIONS=1 \
+-s USE_WEBGL2=1 \
+-s STACK_SIZE=100000 \
+-s ASSERTIONS=2 \
+-s SAFE_HEAP=1 \
+-s STACK_OVERFLOW_CHECK=2 \
+-O2
 
 # Libraries
 LIBS_LINUX = \
@@ -55,6 +79,22 @@ SRC = src/stbImpl.cpp \
 			src/Button.cpp \
 			src/Particle.cpp
 
+# Web build sources
+# Remove glad.c because emscripten provides OpenGL bindings
+WEB_SRC = \
+			src/stbImpl.cpp \
+			src/main.cpp \
+			src/Window.cpp \
+			src/Object.cpp \
+			src/FileLoader.cpp \
+			src/Player.cpp \
+			src/Sound.cpp \
+			src/UIElement.cpp \
+			src/Font.cpp \
+			src/TextElement.cpp \
+			src/Container.cpp \
+			src/Button.cpp \
+			src/Particle.cpp
 
 PUBLISH_SRC = textures \
 							fonts \
@@ -70,7 +110,7 @@ OBJ := $(OBJ:src/glad.c=$(OBJ_DIR)/src/glad.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CXX) $(OBJ) -o $(TARGET) $(LIBS_LINUX)	
+	$(CXX) $(OBJ) -o $(TARGET) $(LIBS_LINUX)
 
 $(OBJ_DIR)/src/%.o: src/%.cpp
 	mkdir -p $(dir $@)
@@ -90,27 +130,55 @@ windows:
 	-o $(WIN_TARGET) \
 	$(LIBS_WINDOWS)
 
+web:
+	mkdir -p publish/web
+
+	$(EMCC) \
+	$(WEB_SRC) \
+	$(WEB_CXXFLAGS) \
+	--preload-file textures \
+	--preload-file fonts \
+	--preload-file shaders \
+	-o $(WEB_TARGET)
+
 test: all
 	./$(TARGET)
 
 clean:
 	rm -rf build
+	rm -rf publish
 	rm -f $(TARGET)
-	rm -r $(WIN_TARGET)
 
 publish:
 	rm -rf publish
+
 	mkdir -p publish/linux
 	mkdir -p publish/windows
+	mkdir -p publish/web
 
+	# Linux
 	cp -r $(PUBLISH_SRC) publish/linux
 	$(MAKE)
 
 	cp $(TARGET) publish/linux/$(TARGET)
 
-	cp -r $(PUBLISH_SRC) $(WINDOWS_DLLS) publish/windows
+	# Windows
+	cp -r $(PUBLISH_SRC) publish/windows
+	cp $(WINDOWS_DLLS) publish/windows
+
 	$(MAKE) windows
 
-	cd publish && zip -r -9 linux.zip linux && zip -r -9 windows.zip windows
+	# Web
+	$(MAKE) web
 
-.PHONY: all clean test windows publish
+	# Zip builds
+	cd publish && \
+	zip -r -9 linux.zip linux && \
+	zip -r -9 windows.zip windows && \
+	zip -r -9 game-web.zip web && \
+	butler push linux.zip $(ITCHIO_USER)/$(PROJECT_NAME):linux && \
+	butler push windows.zip $(ITCHIO_USER)/$(PROJECT_NAME):windows && \
+	butler push game-web.zip $(ITCHIO_USER)/$(PROJECT_NAME):game-web
+
+.PHONY: all clean test windows web publish git
+

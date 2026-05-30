@@ -1,8 +1,7 @@
-#version 330 core
+#version 100
+precision mediump float;
 
-in vec2 TexCoord;
-
-out vec4 FragColor;
+varying vec2 TexCoord;
 
 uniform float alpha;
 uniform sampler2D tex;
@@ -10,9 +9,9 @@ uniform vec3 colorChange;
 
 void main()
 {
-    vec4 finalColor = texture(tex, TexCoord);
+    vec4 finalColor = texture2D(tex, TexCoord);
 
-    FragColor = vec4(
+    gl_FragColor = vec4(
         finalColor.rgb + colorChange,
         finalColor.a * alpha
     );

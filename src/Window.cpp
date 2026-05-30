@@ -1,9 +1,11 @@
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
 #include "Window.h"
 #include "Object.h"
 #include "Player.h"
-#include "Container.h"
 #include "UIElement.h"
-#include "TextElement.h"
 #include "Button.h"
 
 #include <glm/glm.hpp>
@@ -17,6 +19,8 @@ double Window::deltaTime = 0;
 int Window::fbWidth = 600;
 int Window::fbHeight = 480;
 bool Window::inGame = true;
+TextElement* Window::fpsLabel;
+Container* Window::menu;
 
 double lastFrame = 0.0;
 bool toggledMenu = false;
@@ -46,10 +50,12 @@ int Window::init() {
   glfwMakeContextCurrent(window);
   glfwSwapInterval(0); 
 
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      std::cout << "Failed to initialize GLAD\n";
-      return -1;
-  }
+  #ifndef __EMSCRIPTEN__
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+  #endif
 
   glClearColor(0.2f, 0.4f, 0.6f, 1.0f);
 
@@ -65,12 +71,124 @@ int Window::init() {
   glfwSetFramebufferSizeCallback(window,
   [](GLFWwindow*, int width, int height)
   {
+      Window::fbWidth = width;
+      Window::fbHeight = height;
+
       resizing = (width == 0 || height == 0);
+
+      glViewport(0, 0, width, height);
   });
 
   return 0;
 }
 
+void Window::updateFrame() {
+  if (resizing) {
+    glfwPollEvents();
+    glfwSwapBuffers(window);
+    return;
+  }
+
+  glfwPollEvents();
+
+  double currentFrame = glfwGetTime();
+  deltaTime = currentFrame - lastFrame;
+  lastFrame = currentFrame;
+
+  double fps = 1.0 / deltaTime; 
+
+  if (deltaTime > 0.1) {
+    deltaTime = 0.1;
+  } 
+
+  std::ostringstream ss;
+  ss << std::fixed << std::setprecision(1) << fps;
+  std::string fpsString = ss.str();
+
+  fpsLabel->text = "FPS : " + fpsString; 
+
+  #ifdef __EMSCRIPTEN__
+  double cssWidth, cssHeight;
+
+  emscripten_get_element_css_size(
+      "#canvas",
+      &cssWidth,
+      &cssHeight
+  );
+
+  double devicePixelRatio =
+      emscripten_get_device_pixel_ratio();
+
+  int width =
+      (int)(cssWidth * devicePixelRatio);
+
+  int height =
+      (int)(cssHeight * devicePixelRatio);
+
+  emscripten_set_canvas_element_size(
+      "#canvas",
+      width,
+      height
+  );
+  #endif
+
+  glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+
+  if (fbWidth == 0 || fbHeight == 0) {
+    glfwSwapBuffers(window);
+    return;
+  }
+ 
+  glViewport(0, 0, fbWidth, fbHeight);
+
+  glClear(GL_COLOR_BUFFER_BIT);
+  
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && !toggledMenu) {
+    menu->changeVisibility(!menu->objects[0]->visible);
+    toggledMenu = true;
+  } else if (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
+    toggledMenu = false;
+  }
+
+  Player::update();
+  Object::updateAll();
+
+  Object::drawAll();
+
+  glfwSwapBuffers(window);
+}
+
+#ifdef __EMSCRIPTEN__
+void em_loop() {
+  Window::updateFrame();
+}
+
+void Window::mainLoop() {
+  std::vector<Object*> menuElements;
+  
+  UIElement* menuBackground = new UIElement(glm::vec2(0.5f, 0.5f), glm::vec2(0.5f, 0.75f), 0.0f, "textures/Wallpaper.jpeg", 1);
+  TextElement* nameLabel = new TextElement(glm::vec2(0.5f, 0.1f), glm::vec2(0.5f, 0.1f), 1.0f, "textures/Wallpaper.jpeg", 2, "GAME NAME HERE", "fonts/Kenney Future Narrow.ttf", glm::vec3(0.0f, 0.0f, 0.0f));
+  Button* exitButton = new Button(glm::vec2(0.5f, 0.9f), glm::vec2(0.5f, 0.1f), 0.0f, "textures/Wallpaper.jpeg", 2, "Exit", "fonts/Kenney Future Narrow.ttf", glm::vec3(1.0f, 0.0f, 0.0f));
+
+  exitButton->setCallback([]() {
+    inGame = false;
+  });
+
+  menuBackground->anchorPoint = glm::vec2(0.5f, 0.5f);
+  nameLabel->anchorPoint = glm::vec2(0.5f, 0.0f);
+  exitButton->anchorPoint = glm::vec2(0.5f, 1.0f);
+  menuElements.push_back(menuBackground);
+  menuElements.push_back(nameLabel);
+  menuElements.push_back(exitButton);
+
+  menu = new Container(menuElements);
+  menu->changeVisibility(false);
+ 
+  fpsLabel = new TextElement(glm::vec2(0.0f, 0.0f), glm::vec2(0.25f, 0.1f), 1.0f, "textures/Wallpaper.jpeg", 2, "FPS : 0", "fonts/Kenney Future Narrow.ttf", glm::vec3(0.0f, 0.0f, 0.0f));
+
+  emscripten_set_main_loop(em_loop, 0, 1);
+}
+#else
 void Window::mainLoop() { 
   std::vector<Object*> menuElements;
   
@@ -89,57 +207,16 @@ void Window::mainLoop() {
   menuElements.push_back(nameLabel);
   menuElements.push_back(exitButton);
 
-  Container* menu = new Container(menuElements);
+  menu = new Container(menuElements);
   menu->changeVisibility(false);
-  
+ 
+  fpsLabel = new TextElement(glm::vec2(0.0f, 0.0f), glm::vec2(0.25f, 0.1f), 1.0f, "textures/Wallpaper.jpeg", 2, "FPS : 0", "fonts/Kenney Future Narrow.ttf", glm::vec3(0.0f, 0.0f, 0.0f));
+
   while (!glfwWindowShouldClose(window) && inGame){
-    if (resizing) {
-      glfwPollEvents();
-      glfwSwapBuffers(window);
-      continue;
-    }
-
-    glfwPollEvents();
-
-    double currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
-
-    double fps = 1.0 / deltaTime;
-
-    if (deltaTime > 0.1) {
-      deltaTime = 0.1;
-    } 
-
-    std::ostringstream ss;
-    ss << std::fixed << std::setprecision(1) << fps;
-    std::string fpsString = ss.str();
-
-    glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-
-    if (fbWidth == 0 || fbHeight == 0) {
-      glfwSwapBuffers(window);
-      continue;
-    }
-
-    glViewport(0, 0, fbWidth, fbHeight);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-   
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && !toggledMenu) {
-      menu->changeVisibility(!menu->objects[0]->visible);
-      toggledMenu = true;
-    } else if (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
-      toggledMenu = false;
-    }
-
-    Player::update();
-    Object::updateAll();
-
-    Object::drawAll();
-
-    glfwSwapBuffers(window);
+    updateFrame();
   }
 
   glfwTerminate();
 }
+#endif
+

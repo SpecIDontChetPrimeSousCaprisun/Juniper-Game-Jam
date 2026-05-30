@@ -12,7 +12,7 @@
 int main() {
   if (Window::init() == -1) return -1;      
 
-  Sound::init();
+  //Sound::init();
   Object::initShader();
   TextElement::initShader();
 

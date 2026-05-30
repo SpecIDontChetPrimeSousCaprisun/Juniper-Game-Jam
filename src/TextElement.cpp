@@ -189,8 +189,13 @@ void TextElement::afterDrawing(drawInfo* info) {
   float x = startX;
   float y = info->position.y + (info->size.y / 2) + (font->height / 4);
 
-  for (char c : text) {
+  for (unsigned char c : text) {
     if (c < 32 || c >= 128)
+        continue;
+
+    int glyphIndex = c - 32;
+
+    if (glyphIndex < 0 || glyphIndex >= 96)
         continue;
 
     stbtt_aligned_quad q;
@@ -198,7 +203,7 @@ void TextElement::afterDrawing(drawInfo* info) {
     stbtt_GetBakedQuad(
         font->cdata,
         512, 512,
-        c - 32,
+        glyphIndex,
         &x, &y,
         &q,
         1
@@ -219,7 +224,7 @@ void TextElement::afterDrawing(drawInfo* info) {
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
-
+  
   textWidth = x - startX;
 
   glBindVertexArray(0);

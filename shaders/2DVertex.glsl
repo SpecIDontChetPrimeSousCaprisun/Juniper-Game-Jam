@@ -1,9 +1,9 @@
-#version 330 core
+#version 100
 
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aUV;
+attribute vec2 aPos;
+attribute vec2 aUV;
 
-out vec2 TexCoord;
+varying vec2 TexCoord;
 
 uniform mat4 model;
 uniform mat4 projection;
@@ -11,6 +11,5 @@ uniform mat4 projection;
 void main()
 {
     gl_Position = projection * model * vec4(aPos, 0.0, 1.0);
-
     TexCoord = aUV;
 }

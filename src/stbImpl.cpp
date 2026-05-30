@@ -5,4 +5,4 @@
 #include <stb/stb_truetype.h>
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "../include/miniaudio.h"
+#include "miniaudio.h"
