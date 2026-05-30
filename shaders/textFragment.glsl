@@ -9,6 +9,6 @@ uniform vec3 colorChange;
 
 void main()
 {
-    float alpha = texture2D(tex, TexCoord).r;
+    float alpha = texture2D(tex, TexCoord).a;
     gl_FragColor = vec4(color + colorChange, alpha);
 }

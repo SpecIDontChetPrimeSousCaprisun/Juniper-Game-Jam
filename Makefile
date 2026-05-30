@@ -20,13 +20,12 @@ WINDOWS_DLLS = /usr/x86_64-w64-mingw32/bin/glfw3.dll \
 							 /usr/x86_64-w64-mingw32/bin/libwinpthread-1.dll
 
 # Flags
-CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
-WINDOWS_CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
+CXXFLAGS = -std=c++17 -Iinclude
+WINDOWS_CXXFLAGS = -std=c++17 -Iinclude
+TEST_CXXFLAGS = -Wall -Wextra
 
 WEB_CXXFLAGS = \
 -std=c++17 \
--Wall \
--Wextra \
 -Iinclude \
 -s USE_GLFW=3 \
 -s USE_SDL=2 \
@@ -132,15 +131,17 @@ windows:
 
 web:
 	mkdir -p publish/web
-
+ 
 	$(EMCC) \
 	$(WEB_SRC) \
 	$(WEB_CXXFLAGS) \
 	--preload-file textures \
 	--preload-file fonts \
 	--preload-file shaders \
+	--preload-file sfx \
 	-o $(WEB_TARGET)
 
+test: CXXFLAGS += $(TEST_CXXFLAGS)
 test: all
 	./$(TARGET)
 
@@ -149,9 +150,7 @@ clean:
 	rm -rf publish
 	rm -f $(TARGET)
 
-publish:
-	rm -rf publish
-
+publish: clean
 	mkdir -p publish/linux
 	mkdir -p publish/windows
 	mkdir -p publish/web
