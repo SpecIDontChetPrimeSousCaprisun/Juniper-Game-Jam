@@ -6,6 +6,11 @@ UIElement::UIElement(glm::vec2 position, glm::vec2 size, float transparency, std
   anchorPoint = glm::vec2(0.0f, 0.0f);
 }
 
+UIElement::UIElement(glm::vec2 position, glm::vec2 size, float transparency, glm::vec3 color, int zIndex)
+  : Object(position, size, transparency, color, 9999 + zIndex) {
+  anchorPoint = glm::vec2(0.0f, 0.0f);
+}
+
 drawInfo* UIElement::beforeDrawing(drawInfo* info) {
   return baseBeforeDrawing(info);
 }

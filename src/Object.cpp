@@ -5,6 +5,7 @@
 #include <cmath>
 
 unsigned int Object::shaderProgram = 0;
+std::vector<Object*> Object::registerQueue;
 std::map<int, std::vector<Object*>> Object::objects;
 
 drawInfo::drawInfo(glm::vec2 position, glm::vec2 size)
@@ -44,6 +45,14 @@ void Object::updateAll() {
   }
 
   deletePendingObjects();
+}
+
+void Object::registerAll() {
+  for (Object* object : registerQueue) {
+    objects[object->zIndex].push_back(object);
+  }
+
+  registerQueue.clear();
 }
 
 void Object::initShader() {
@@ -215,12 +224,19 @@ void Object::init() {
   glBindVertexArray(0);
 
   colorChange = glm::vec3(0.0f, 0.0f, 0.0f);
+}
 
-  objects[zIndex].push_back(this);
+void Object::registerObject() {
+  registerQueue.push_back(this);
 }
 
 Object::Object(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex) 
-  : position(position), size(size), linearVelocity(glm::vec2(0.0f, 0.0f)), transparency(transparency), texture(FileLoader::loadTexture(texPath)), zIndex(zIndex), visible(true), anchored(true), canCollide(false), rotation(0), pendingDelete(false) {
+  : position(position), size(size), linearVelocity(glm::vec2(0.0f, 0.0f)), transparency(transparency), texture(FileLoader::loadTexture(texPath)), zIndex(zIndex), visible(true), anchored(true), canCollide(false), rotation(0), pendingDelete(false), usesColor(false) {
+    init();
+}
+
+Object::Object(glm::vec2 position, glm::vec2 size, float transparency, glm::vec3 color, int zIndex) 
+  : position(position), size(size), linearVelocity(glm::vec2(0.0f, 0.0f)), transparency(transparency), color(color), zIndex(zIndex), visible(true), anchored(true), canCollide(false), rotation(0), pendingDelete(false), usesColor(true) {
     init();
 }
 
@@ -317,6 +333,16 @@ void Object::draw() {
       colorChange.x, colorChange.y, colorChange.z
   );
 
+  glUniform1i(
+      glGetUniformLocation(shaderProgram, "useColor"),
+      usesColor ? 1 : 0
+  );
+
+  glUniform3f(
+      glGetUniformLocation(shaderProgram, "color"),
+      color.x, color.y, color.z
+  );
+
   // ===== TEXTURE =====
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -358,13 +384,16 @@ void Object::update() {
           if (object == this) continue;
           if (!object->canCollide) continue;
 
-          float left  = object->position.x - (position.x + size.x);
-          float right = (object->position.x + object->size.x) - position.x;
+          if (linearVelocity.x > 0.0f) {
+            // moving right
+            position.x = object->position.x - size.x;
+          }
+          else if (linearVelocity.x < 0.0f) {
+            // moving left
+            position.x = object->position.x + object->size.x;
+          }
 
-          float overlapX = std::abs(left) < std::abs(right) ? left : right;
-
-          position += glm::vec2(overlapX, 0.0f);
-          linearVelocity.x = 0;
+          linearVelocity.x = 0.0f;
         }
       }
     }
@@ -381,13 +410,16 @@ void Object::update() {
           if (object == this) continue;
           if (!object->canCollide) continue;
 
-          float top = object->position.y - (position.y + size.y);
-          float bottom = (object->position.y + object->size.y) - position.y;
-  
-          float overlapY = std::abs(top) < std::abs(bottom) ? top : bottom;
+          if (linearVelocity.y > 0.0f) {
+            // falling
+            position.y = object->position.y - size.y;
+          }
+          else if (linearVelocity.y < 0.0f) {
+            // moving upward
+            position.y = object->position.y + object->size.y;
+          }
 
-          position += glm::vec2(0.0f, overlapY);
-          linearVelocity.y = 0;
+          linearVelocity.y = 0.0f;
         }
       }
     }

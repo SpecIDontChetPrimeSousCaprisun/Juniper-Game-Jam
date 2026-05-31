@@ -9,4 +9,5 @@ public:
   std::vector<Object*> objects;
   
   void changeVisibility(bool visible);
+  void registerObjects();
 };

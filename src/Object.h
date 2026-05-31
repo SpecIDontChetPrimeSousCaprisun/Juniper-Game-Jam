@@ -24,11 +24,13 @@ public:
   Object& operator=(const Object&) = delete;
 
   Object(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex);
+  Object(glm::vec2 position, glm::vec2 size, float transparency, glm::vec3 color, int zIndex);
   virtual ~Object();
 
   static void initShader();
   static void updateAll();
   static void drawAll();
+  static void registerAll();
   static Object* raycast(
                           glm::vec2 origin,
                           const glm::vec2& direction,
@@ -36,6 +38,8 @@ public:
                           float& tHit,
                           const std::vector<Object*>& ignore
                         );
+
+  void registerObject();
 
   glm::vec2 position, size, linearVelocity;
   float transparency, rotation;
@@ -50,12 +54,15 @@ protected:
   glm::vec3 colorChange;
   bool pendingDelete;
 private:
+  static std::vector<Object*> registerQueue;
   static std::map<int, std::vector<Object*>> objects;
   static unsigned int shaderProgram;
 
   static void deletePendingObjects();
 
   unsigned int VAO, VBO, texture;
+  glm::vec3 color;
+  bool usesColor;
 
   void init();
   void update();

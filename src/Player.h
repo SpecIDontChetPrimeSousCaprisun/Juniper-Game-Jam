@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include "UIElement.h"
 
 class Player : public Object {
 public:
@@ -8,5 +9,17 @@ public:
   
   static void update();
 
+  static UIElement* healthBar;
+  static UIElement* healthBarBackground;
   static Player* currentPlayer;
+
+  float getHealth();
+  void takeDamage(float damage);
+  void setHealth(float health);
+
+  float maxHealth;
+protected:
+  void beforeUpdate() override;
+private:
+  float health;
 };

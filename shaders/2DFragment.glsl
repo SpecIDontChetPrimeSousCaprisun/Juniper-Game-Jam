@@ -6,13 +6,20 @@ varying vec2 TexCoord;
 uniform float alpha;
 uniform sampler2D tex;
 uniform vec3 colorChange;
+uniform vec3 color;
+uniform bool useColor;
 
-void main()
-{
-    vec4 finalColor = texture2D(tex, TexCoord);
+void main() {
+  vec4 finalColor;
 
-    gl_FragColor = vec4(
-        finalColor.rgb + colorChange,
-        finalColor.a * alpha
-    );
+  if (useColor) {
+    finalColor = vec4(color, 1);
+  } else {
+    finalColor = texture2D(tex, TexCoord);
+  }
+
+  gl_FragColor = vec4(
+      finalColor.rgb + colorChange,
+      finalColor.a * alpha
+  );
 }

@@ -142,13 +142,24 @@ void Window::updateFrame() {
   glViewport(0, 0, fbWidth, fbHeight);
 
   glClear(GL_COLOR_BUFFER_BIT);
-  
+ 
+  #ifdef __EMSCRIPTEN__
+  if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !toggledMenu) {
+    menu->changeVisibility(!menu->objects[0]->visible);
+    toggledMenu = true;
+  } else if (glfwGetKey(window, GLFW_KEY_TAB) != GLFW_PRESS) {
+    toggledMenu = false;
+  }
+  #else
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && !toggledMenu) {
     menu->changeVisibility(!menu->objects[0]->visible);
     toggledMenu = true;
   } else if (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
     toggledMenu = false;
   }
+  #endif
+
+  Object::registerAll();
 
   Player::update();
   Object::updateAll();
@@ -183,8 +194,10 @@ void Window::mainLoop() {
 
   menu = new Container(menuElements);
   menu->changeVisibility(false);
+  menu->registerObjects();
  
   fpsLabel = new TextElement(glm::vec2(0.0f, 0.0f), glm::vec2(0.25f, 0.1f), 1.0f, "textures/Wallpaper.jpeg", 2, "FPS : 0", "fonts/Kenney Future Narrow.ttf", glm::vec3(0.0f, 0.0f, 0.0f));
+  fpsLabel->registerObject();
 
   emscripten_set_main_loop(em_loop, 0, 1);
 }
@@ -209,8 +222,10 @@ void Window::mainLoop() {
 
   menu = new Container(menuElements);
   menu->changeVisibility(false);
- 
+  menu->registerObjects();
+
   fpsLabel = new TextElement(glm::vec2(0.0f, 0.0f), glm::vec2(0.25f, 0.1f), 1.0f, "textures/Wallpaper.jpeg", 2, "FPS : 0", "fonts/Kenney Future Narrow.ttf", glm::vec3(0.0f, 0.0f, 0.0f));
+  fpsLabel->registerObject();
 
   while (!glfwWindowShouldClose(window) && inGame){
     updateFrame();

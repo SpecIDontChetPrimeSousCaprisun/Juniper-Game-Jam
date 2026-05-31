@@ -38,6 +38,7 @@ WEB_CXXFLAGS = \
 -s ASSERTIONS=2 \
 -s SAFE_HEAP=1 \
 -s STACK_OVERFLOW_CHECK=2 \
+-s USE_PTHREADS=1 \
 -O2
 
 # Libraries
@@ -63,38 +64,28 @@ LIBS_WINDOWS = \
 -lwinmm
 
 # Sources
-SRC = src/stbImpl.cpp \
-			src/glad.c \
-			src/main.cpp \
-			src/Window.cpp \
-			src/Object.cpp \
-			src/FileLoader.cpp \
-			src/Player.cpp \
-			src/Sound.cpp \
-			src/UIElement.cpp \
-			src/Font.cpp \
-			src/TextElement.cpp \
-			src/Container.cpp \
-			src/Button.cpp \
-			src/Particle.cpp
+COMMON_SRC = \
+	src/stbImpl.cpp \
+	src/main.cpp \
+	src/Window.cpp \
+	src/Object.cpp \
+	src/FileLoader.cpp \
+	src/Player.cpp \
+	src/Sound.cpp \
+	src/UIElement.cpp \
+	src/Font.cpp \
+	src/TextElement.cpp \
+	src/Container.cpp \
+	src/Button.cpp \
+	src/Particle.cpp \
+	src/Enemy.cpp \
+	src/UIParticle.cpp
+
+SRC = $(COMMON_SRC) src/glad.c
+WEB_SRC = $(COMMON_SRC)
 
 # Web build sources
 # Remove glad.c because emscripten provides OpenGL bindings
-WEB_SRC = \
-			src/stbImpl.cpp \
-			src/main.cpp \
-			src/Window.cpp \
-			src/Object.cpp \
-			src/FileLoader.cpp \
-			src/Player.cpp \
-			src/Sound.cpp \
-			src/UIElement.cpp \
-			src/Font.cpp \
-			src/TextElement.cpp \
-			src/Container.cpp \
-			src/Button.cpp \
-			src/Particle.cpp
-
 PUBLISH_SRC = textures \
 							fonts \
 							shaders

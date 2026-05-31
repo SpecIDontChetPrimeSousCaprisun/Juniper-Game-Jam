@@ -7,3 +7,9 @@ void Container::changeVisibility(bool visible) {
     object->visible = visible;
   }
 }
+
+void Container::registerObjects() {
+  for (Object* object : objects) {
+    object->registerObject();
+  }
+}
