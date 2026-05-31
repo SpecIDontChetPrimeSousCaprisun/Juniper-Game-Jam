@@ -1,6 +1,17 @@
 #include "Font.h"
 #include "FileLoader.h"
 
+std::map<FontInfo, Font*> Font::fonts;
+
+FontInfo::FontInfo(std::string path, float pixelHeight) : path(path), pixelHeight(pixelHeight) {}
+
+bool FontInfo::operator<(const FontInfo& other) const {
+  if (path != other.path)
+    return path < other.path;
+
+  return pixelHeight < other.pixelHeight;
+}
+
 Font::Font(const std::string& path, float pixelHeight) {
   ttfBuffer = FileLoader::loadFontFile(path);
 
@@ -63,4 +74,19 @@ Font::Font(const std::string& path, float pixelHeight) {
   height = (ascent - descent) * scale;
 
   glBindTexture(GL_TEXTURE_2D, 0);
+
+  FontInfo* info = new FontInfo(path, pixelHeight);
+
+  fonts[*info] = this;
+}
+
+Font* Font::getFont(const std::string& path, float pixelHeight) {
+  FontInfo info(path, pixelHeight);
+  Font* existingFont = fonts[info];
+
+  if (existingFont) {
+    return existingFont;
+  } else {
+    return new Font(path, pixelHeight);
+  }
 }

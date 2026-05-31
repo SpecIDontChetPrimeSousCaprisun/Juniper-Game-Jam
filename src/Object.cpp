@@ -224,6 +224,7 @@ void Object::init() {
   glBindVertexArray(0);
 
   colorChange = glm::vec3(0.0f, 0.0f, 0.0f);
+  gravity = 500.0f;
 }
 
 void Object::registerObject() {
@@ -370,7 +371,7 @@ void Object::update() {
   beforeUpdate();
 
   if (!anchored) {  
-    linearVelocity += glm::vec2(0.0f, 500.0f * (float)Window::deltaTime);
+    linearVelocity += glm::vec2(0.0f, gravity * (float)Window::deltaTime);
 
     position.x += linearVelocity.x * Window::deltaTime;
 

@@ -4,12 +4,23 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <stb/stb_truetype.h>
 
-class Font {
+struct FontInfo {
 public:
-  Font(const std::string& path, float pixelHeight);
+  FontInfo(std::string path, float pixelHeight);
+
+  bool operator<(const FontInfo& other) const;
+
+  std::string path;
+  float pixelHeight;
+};
+
+class Font {
+public: 
+  static Font* getFont(const std::string& path, float pixelHeight);
 
   unsigned int texture;
   int ascent, descent, lineGap;
@@ -18,5 +29,9 @@ public:
 
   stbtt_bakedchar cdata[96];
 private:
+  Font(const std::string& path, float pixelHeight);
+
+  static std::map<FontInfo, Font*> fonts;
+
   std::vector<unsigned char> ttfBuffer;
 };

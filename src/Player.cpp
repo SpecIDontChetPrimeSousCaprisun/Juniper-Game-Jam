@@ -12,7 +12,7 @@ UIElement* Player::healthBar;
 UIElement* Player::healthBarBackground;
 
 Player::Player(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex, bool isCurrentPlayer) 
-  : Object(position, size, transparency, texPath, zIndex), health(100), maxHealth(100) {
+  : Object(position, size, transparency, texPath, zIndex), health(100), maxHealth(100), state("idle") {
   anchored = false;
   canCollide = true;
 
@@ -47,14 +47,18 @@ void Player::update() {
     ignore
   );
 
-  if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && result) {
+  if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && result && currentPlayer->state == "idle") {
     currentPlayer->linearVelocity -= glm::vec2(0.0f, 400.0f);
+    currentPlayer->state = "jumping";
   
     glm::vec2 particlePos = currentPlayer->position;
     particlePos += glm::vec2(currentPlayer->size.x / 2, currentPlayer->size.y);
 
     Sound::playSound("sfx/jump.wav");
-    Particle::createParticles(particlePos, glm::vec2(25.0f, 25.0f), 0.5f, "textures/Wallpaper.jpeg", glm::vec2(0.0f, -100.0f), 100.0f, 5.0f, 10);
+    Particle::createParticles(particlePos, glm::vec2(25.0f, 25.0f), 0.5f, "textures/Wallpaper.jpeg", glm::vec2(0.0f, -100.0f), 100.0f, 1.0f, 10);
+  } else if (result && currentPlayer->state == "falling") {
+    currentPlayer->state = "idle";
+    currentPlayer->gravity = 500.0f;
   }
 
   if (glfwGetKey(Window::window, GLFW_KEY_D) == GLFW_PRESS) {
@@ -81,7 +85,7 @@ void Player::takeDamage(float damage) {
   if (!(this == currentPlayer)) return;
 
   glm::vec2 particlePos(healthBar->position.x + std::max((currentPlayer->health / currentPlayer->maxHealth) * 0.33f, 0.0f), healthBar->position.y - (healthBar->size.y / 2));
-  UIParticle::createParticles(particlePos, glm::vec2(0.01f, 0.01f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.1f, 0.0f), 0.1f, 5.0f, 10);
+  UIParticle::createParticles(particlePos, glm::vec2(0.01f, 0.01f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.1f, 0.0f), 0.1f, 2.5f, 10);
 }
 
 void Player::setHealth(float health) {
@@ -90,4 +94,9 @@ void Player::setHealth(float health) {
 
 void Player::beforeUpdate() {
   colorChange.x -= 1.0f * Window::deltaTime;
+
+  if (state == "jumping" && linearVelocity.y >= 0.0f) {
+    state = "falling";
+    gravity = 1250.0f;
+  }
 }

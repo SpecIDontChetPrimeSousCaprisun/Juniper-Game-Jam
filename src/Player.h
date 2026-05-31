@@ -22,4 +22,5 @@ protected:
   void beforeUpdate() override;
 private:
   float health;
+  std::string state;
 };
