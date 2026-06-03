@@ -118,7 +118,8 @@ windows:
 	$(WINDOWS_CXXFLAGS) \
 	$(SRC) \
 	-o $(WIN_TARGET) \
-	$(LIBS_WINDOWS)
+	$(LIBS_WINDOWS) \
+	-mwindows
 
 web:
 	mkdir -p publish/web
