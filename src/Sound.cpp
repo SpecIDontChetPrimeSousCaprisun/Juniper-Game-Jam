@@ -22,4 +22,22 @@ void Sound::playSound(const char* path) {
   }
 }
 
+ma_sound* Sound::playLoopingSound(const char* path) {
+  auto* sound = new ma_sound;
 
+  if (ma_sound_init_from_file(
+          &engine,
+          path,
+          0,
+          nullptr,
+          nullptr,
+          sound) != MA_SUCCESS) {
+      delete sound;
+      return nullptr;
+  }
+
+  ma_sound_set_looping(sound, MA_TRUE);
+  ma_sound_start(sound);
+
+  return sound;
+}

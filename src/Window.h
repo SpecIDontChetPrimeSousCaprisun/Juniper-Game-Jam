@@ -6,6 +6,7 @@
 #include "Container.h"
 #include <GLFW/glfw3.h>
 #include <vector>
+#include "Sound.h"
 
 class Window {
 public:
@@ -19,4 +20,5 @@ public:
   static bool inGame;
   static TextElement* fpsLabel;
   static Container* menu;
+  static ma_sound* music;
 };

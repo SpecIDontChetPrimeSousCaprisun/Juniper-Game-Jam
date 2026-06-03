@@ -244,7 +244,10 @@ Object::Object(glm::vec2 position, glm::vec2 size, float transparency, glm::vec3
 Object::~Object() {
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
-  glDeleteTextures(1, &texture);
+
+  if (!usesColor) {
+    glDeleteTextures(1, &texture);
+  }
 }
 
 drawInfo* Object::beforeDrawing(drawInfo* info) {

@@ -11,9 +11,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 int main() {
-  if (Window::init() == -1) return -1;      
-
   Sound::init();
+
+  if (Window::init() == -1) return -1;      
+ 
   Object::initShader();
   TextElement::initShader();
 
@@ -33,7 +34,7 @@ int main() {
 
   platform->canCollide = true;
   platform->registerObject();
-
+ 
   Window::mainLoop();
   Sound::unInit();
 }

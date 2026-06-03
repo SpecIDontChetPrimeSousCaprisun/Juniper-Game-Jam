@@ -93,7 +93,10 @@ void Player::setHealth(float health) {
 }
 
 void Player::beforeUpdate() {
-  colorChange.x -= 1.0f * Window::deltaTime;
+  colorChange.x = std::max(
+        colorChange.x - (float)Window::deltaTime,
+        0.0f
+    );
 
   if (state == "jumping" && linearVelocity.y >= 0.0f) {
     state = "falling";
