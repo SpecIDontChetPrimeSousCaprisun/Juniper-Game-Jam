@@ -123,7 +123,7 @@ void TextElement::initShader() {
 }
 
 TextElement::TextElement(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex, std::string text, std::string fontPath, glm::vec3 textColor)
-  : UIElement(position, size, transparency, texPath, zIndex), text(text), font(Font::getFont(fontPath, size.y * Window::fbHeight)), textColor(textColor), textCentered(true), textWidth(0.0f) {
+  : UIElement(position, size, transparency, texPath, zIndex), text(text), font(Font::getFont(fontPath, size.y * Window::fbHeight)), textColor(textColor), textCentered(true), textWidth(0.0f), textTransparency(0.0f) {
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
 
@@ -141,6 +141,40 @@ TextElement::TextElement(glm::vec2 position, glm::vec2 size, float transparency,
   glEnableVertexAttribArray(1);
 
   glBindVertexArray(0);
+}
+
+TextElement::TextElement(glm::vec2 position, glm::vec2 size, float transparency, glm::vec3 color, int zIndex, std::string text, std::string fontPath, glm::vec3 textColor)
+  : UIElement(position, size, transparency, color, zIndex), text(text), font(Font::getFont(fontPath, size.y * Window::fbHeight)), textColor(textColor), textCentered(true), textWidth(0.0f), textTransparency(0.0f) {
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+
+  // position
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  // uv
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  glBindVertexArray(0);
+}
+
+drawInfo* TextElement::baseTextBeforeDrawing() {
+  drawInfo* info = baseBeforeDrawing(new drawInfo(glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+
+  info->text = text;
+  info->textColor = textColor;
+
+  return info;
+}
+
+drawInfo* TextElement::beforeDrawing(drawInfo* info) {
+  return baseTextBeforeDrawing();
 }
 
 void TextElement::afterDrawing(drawInfo* info) {
@@ -161,7 +195,7 @@ void TextElement::afterDrawing(drawInfo* info) {
 
   glUniform3f(
       glGetUniformLocation(shaderProgram, "color"),
-      textColor.r, textColor.g, textColor.b
+      info->textColor.r, info->textColor.g, info->textColor.b
   );
 
   glUniform3f(
@@ -177,7 +211,82 @@ void TextElement::afterDrawing(drawInfo* info) {
       0
   );
 
+  glUniform1f(
+      glGetUniformLocation(shaderProgram, "transparency"),
+      textTransparency
+  );
+
+  glUniform1f(
+    glGetUniformLocation(shaderProgram, "rotation"),
+    rotation
+  );
+
+  glm::vec2 pivot(
+    info->position.x + info->size.x * 0.5f,
+    info->position.y + info->size.y * 0.5f
+  );
+
+  glUniform2f(
+    glGetUniformLocation(shaderProgram, "pivot"),
+    pivot.x,
+    pivot.y
+  );
+
   glBindVertexArray(VAO);
+
+  float startX = info->position.x;
+
+  if (textCentered) {
+    startX += info->size.x / 2;
+    startX -= textWidth / 2;
+  }
+
+  float x = startX;
+  float y = info->position.y + (info->size.y / 2) + (font->height / 4);
+
+  for (unsigned char c : info->text) {
+    if (c < 32 || c >= 128)
+        continue;
+
+    int glyphIndex = c - 32;
+
+    if (glyphIndex < 0 || glyphIndex >= 96)
+        continue;
+
+    stbtt_aligned_quad q;
+
+    stbtt_GetBakedQuad(
+        font->cdata,
+        512, 512,
+        glyphIndex,
+        &x, &y,
+        &q,
+        1
+    );
+
+    float vertices[6][4] = {
+        { q.x0, q.y0, q.s0, q.t0 },
+        { q.x1, q.y0, q.s1, q.t0 },
+        { q.x1, q.y1, q.s1, q.t1 },
+
+        { q.x1, q.y1, q.s1, q.t1 },
+        { q.x0, q.y1, q.s0, q.t1 },
+        { q.x0, q.y0, q.s0, q.t0 }
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+  }
+  
+  textWidth = x - startX;
+
+  glBindVertexArray(0);
+}
+
+void TextElement::recalculateTextWidth() {
+  drawInfo* info = beforeDrawing(new drawInfo(glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
 
   float startX = info->position.x;
 
@@ -218,14 +327,11 @@ void TextElement::afterDrawing(drawInfo* info) {
         { q.x0, q.y1, q.s0, q.t1 },
         { q.x0, q.y0, q.s0, q.t0 }
     };
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
   }
   
   textWidth = x - startX;
+}
 
-  glBindVertexArray(0);
+void TextElement::reloadFont(std::string fontPath) {
+  font = Font::getFont(fontPath, size.y * Window::fbHeight);
 }

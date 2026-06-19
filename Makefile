@@ -43,7 +43,6 @@ WEB_CXXFLAGS = \
 
 # Libraries
 LIBS_LINUX = \
--lassimp \
 -lglfw \
 -lGL \
 -ldl \
@@ -57,7 +56,6 @@ LIBS_LINUX = \
 
 LIBS_WINDOWS = \
 -L/usr/x86_64-w64-mingw32/lib \
--lassimp \
 -lglfw3 \
 -lopengl32 \
 -lgdi32 \

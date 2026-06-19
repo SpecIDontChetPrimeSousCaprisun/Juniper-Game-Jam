@@ -16,6 +16,8 @@ public:
   drawInfo(glm::vec2 position, glm::vec2 size);
 
   glm::vec2 position, size;
+  std::string text;
+  glm::vec3 textColor;
 };
 
 class Object {
@@ -40,9 +42,11 @@ public:
                         );
 
   void registerObject();
+  void pendDelete();
+  bool isDeleted();
 
   glm::vec2 position, size, linearVelocity;
-  float transparency, rotation;
+  float transparency, rotation, cornerRadius;
   bool visible, anchored, canCollide;
   int zIndex;
 protected:

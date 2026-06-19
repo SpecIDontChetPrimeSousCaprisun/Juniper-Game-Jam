@@ -225,6 +225,7 @@ void Object::init() {
 
   colorChange = glm::vec3(0.0f, 0.0f, 0.0f);
   gravity = 500.0f;
+  cornerRadius = 0.0f;
 }
 
 void Object::registerObject() {
@@ -327,6 +328,17 @@ void Object::draw() {
   );
 
   // ===== COLOR =====
+  glUniform2f(
+    glGetUniformLocation(shaderProgram, "objectSize"),
+    size.x, size.y
+  );
+
+
+  glUniform1f(
+    glGetUniformLocation(shaderProgram, "cornerRadius"),
+    cornerRadius
+  );
+
   glUniform1f(
       glGetUniformLocation(shaderProgram, "alpha"),
       1 - transparency
@@ -509,4 +521,12 @@ Object* Object::raycast(
   }
 
   return nullptr;
+}
+
+void Object::pendDelete() {
+  pendingDelete = true;
+}
+
+bool Object::isDeleted() {
+  return pendingDelete;
 }
