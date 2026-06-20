@@ -12,7 +12,7 @@ UIElement* Player::healthBar;
 UIElement* Player::healthBarBackground;
 
 Player::Player(glm::vec2 position, glm::vec2 size, float transparency, std::string texPath, int zIndex, bool isCurrentPlayer) 
-  : Object(position, size, transparency, texPath, zIndex), health(100), maxHealth(100), state("idle") {
+  : Object(position, size, transparency, texPath, zIndex), health(100), maxHealth(100), state("idle"), lastJump(0.0f) {
   anchored = false;
   canCollide = true;
 
@@ -65,6 +65,7 @@ void Player::update() {
 
   if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && (result || resultR || resultL) && currentPlayer->state != "jumping") {
     currentPlayer->linearVelocity = glm::normalize(currentPlayer->lastCorrection) * 500.0f;
+    currentPlayer->lastJump = 1.0f;
     currentPlayer->state = "jumping";
 
     glm::vec2 particlePos = currentPlayer->position;
@@ -72,9 +73,11 @@ void Player::update() {
 
     Sound::playSound("sfx/jump.wav");
     Particle::createParticles(particlePos, glm::vec2(25.0f, 25.0f), 0.5f, "textures/Wallpaper.jpeg", glm::vec2(0.0f, -100.0f), 100.0f, 1.0f, 10);
-  } else if (!(result || resultR || resultL) && currentPlayer->state == "jumping") {
+  } else if ((!(result || resultR || resultL) || currentPlayer->lastJump <= 0.0f) && currentPlayer->state == "jumping") {
     currentPlayer->state = "idle";
   }
+
+  currentPlayer->lastJump -= Window::deltaTime;
 
   if (glfwGetKey(Window::window, GLFW_KEY_D) == GLFW_PRESS) {
     currentPlayer->linearVelocity.x = 250.0f;
