@@ -57,24 +57,23 @@ void Player::update() {
 
   Object* resultL = Object::raycast(
     currentPlayer->position + glm::vec2(0.0f, currentPlayer->size.y),
-    glm::vec2(0.0f, 0.01f + currentPlayer->size.y),
+    glm::vec2(0.0f, 0.5f),
     hitPoint,
     tHit,
     ignore
   );
 
-  if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && (result || resultR || resultL)) {
-    currentPlayer->linearVelocity -= glm::vec2(0.0f, 400.0f);
+  if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && (result || resultR || resultL) && currentPlayer->state != "jumping") {
+    currentPlayer->linearVelocity = glm::normalize(currentPlayer->lastCorrection) * 500.0f;
     currentPlayer->state = "jumping";
-  
+
     glm::vec2 particlePos = currentPlayer->position;
     particlePos += glm::vec2(currentPlayer->size.x / 2, currentPlayer->size.y);
 
     Sound::playSound("sfx/jump.wav");
     Particle::createParticles(particlePos, glm::vec2(25.0f, 25.0f), 0.5f, "textures/Wallpaper.jpeg", glm::vec2(0.0f, -100.0f), 100.0f, 1.0f, 10);
-  } else if (result && currentPlayer->state == "falling") {
+  } else if (!(result || resultR || resultL) && currentPlayer->state == "jumping") {
     currentPlayer->state = "idle";
-    currentPlayer->gravity = 500.0f;
   }
 
   if (glfwGetKey(Window::window, GLFW_KEY_D) == GLFW_PRESS) {
@@ -113,9 +112,4 @@ void Player::beforeUpdate() {
         colorChange.x - (float)Window::deltaTime,
         0.0f
     );
-
-  if (state == "jumping" && linearVelocity.y >= 0.0f) {
-    state = "falling";
-    //gravity = 1250.0f;
-  }
 }

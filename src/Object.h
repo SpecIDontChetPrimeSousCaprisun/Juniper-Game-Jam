@@ -56,6 +56,7 @@ protected:
   virtual void afterUpdate();
 
   glm::vec3 colorChange;
+  glm::vec2 lastCorrection;
   float gravity;
   bool pendingDelete;
 private:

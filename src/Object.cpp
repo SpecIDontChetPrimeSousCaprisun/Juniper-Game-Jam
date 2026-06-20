@@ -224,6 +224,7 @@ void Object::init() {
   glBindVertexArray(0);
 
   colorChange = glm::vec3(0.0f, 0.0f, 0.0f);
+  lastCorrection = glm::vec2(0.0f, 0.0f);
   gravity = 500.0f;
   cornerRadius = 0.0f;
 }
@@ -459,12 +460,14 @@ void Object::update() {
             if (glm::dot(dir, bestAxis) < 0.0f)
                 correction = -correction;
 
-            if (object->anchored)
+            if (object->anchored) {
               position += correction;
-            else
-            {
+              lastCorrection = correction;
+            } else {
               position += correction * 0.5f;
               object->position -= correction * 0.5f;
+              lastCorrection = correction * 0.5f;
+              object->lastCorrection = correction * 0.5f;
             }
 
             float vn = glm::dot(linearVelocity, bestAxis);
