@@ -11,6 +11,28 @@ std::map<int, std::vector<Object*>> Object::objects;
 drawInfo::drawInfo(glm::vec2 position, glm::vec2 size)
   : position(position), size(size) {}
 
+void Object::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+  double mouseX;
+  double mouseY;
+
+  glfwGetCursorPos(window, &mouseX, &mouseY);
+
+  for (auto& [zIndex, objectsVector] : objects) {
+    for (Object* object : objectsVector) {
+      glm::vec2 visiblePosition = object->position;
+
+      visiblePosition -= (Player::currentPlayer->position - (glm::vec2(Window::fbWidth, Window::fbHeight) / 2.0f)) + (Player::currentPlayer->size / 2.0f);
+
+      if (mouseX >= visiblePosition.x &&
+          mouseX <= visiblePosition.x + object->size.x &&
+          mouseY >= visiblePosition.y &&
+          mouseY <= visiblePosition.y + object->size.y) {
+        object->rotation += (yoffset * Window::deltaTime) * 1000.0f;
+      }
+    }
+  }
+}
+
 void Object::deletePendingObjects() {
   for (auto& [zIndex, objectsVector] : objects) {
     for (auto it = objectsVector.begin(); it != objectsVector.end(); ) {
@@ -225,6 +247,7 @@ void Object::init() {
 
   colorChange = glm::vec3(0.0f, 0.0f, 0.0f);
   lastCorrection = glm::vec2(0.0f, 0.0f);
+  angularVelocity = 0.0f;
   gravity = 500.0f;
   cornerRadius = 0.0f;
 }
@@ -386,10 +409,12 @@ void Object::afterUpdate() {}
 void Object::update() {
   beforeUpdate();
 
+  rotation += angularVelocity * Window::deltaTime;
+
   if (!anchored) {  
     linearVelocity += glm::vec2(0.0f, gravity * (float)Window::deltaTime);
 
-    position += glm::vec2(linearVelocity.x * Window::deltaTime, linearVelocity.y * Window::deltaTime);
+    position += glm::vec2(linearVelocity.x * Window::deltaTime, linearVelocity.y * Window::deltaTime); 
 
     if (canCollide) {
       for (auto& [zIndex, objectsVector] : objects) {

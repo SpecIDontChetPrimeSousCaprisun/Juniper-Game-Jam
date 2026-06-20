@@ -33,6 +33,7 @@ public:
   static void updateAll();
   static void drawAll();
   static void registerAll();
+  static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
   static Object* raycast(
                           glm::vec2 origin,
                           const glm::vec2& direction,
@@ -46,7 +47,7 @@ public:
   bool isDeleted();
 
   glm::vec2 position, size, linearVelocity;
-  float transparency, rotation, cornerRadius;
+  float transparency, rotation, cornerRadius, angularVelocity;
   bool visible, anchored, canCollide;
   int zIndex;
 protected:

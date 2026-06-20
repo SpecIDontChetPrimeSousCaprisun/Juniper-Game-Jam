@@ -7,8 +7,8 @@ WIN_CXX = x86_64-w64-mingw32-g++
 EMCC = em++
 
 # Targets
-TARGET = game
-WIN_TARGET = publish/windows/game.exe
+TARGET = AngularVelocity
+WIN_TARGET = publish/windows/AngularVelocity.exe
 WEB_TARGET = publish/web/index.html
 
 WINDOWS_DLLS = /usr/x86_64-w64-mingw32/usr/bin/glfw3.dll \

@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "UIElement.h"
 #include "Button.h"
+#include "ScrollingElement.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -49,7 +50,11 @@ int Window::init() {
 
   /* Make the window's context current */
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(0); 
+  glfwSwapInterval(0);
+  glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset){
+    //ScrollingElement::scrollCallback(window, xoffset, yoffset);
+    Object::scrollCallback(window, xoffset, yoffset);
+  });
 
   #ifndef __EMSCRIPTEN__
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
