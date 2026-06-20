@@ -25,14 +25,16 @@ int main() {
 
   plr->registerObject();
 
-  enemy->registerObject();
+  //enemy->registerObject();
 
   obj2->anchored = false;
   obj2->canCollide = true;
   obj2->linearVelocity = glm::vec2(-100.f, 0.0f);
+  obj2->rotation = 45;
   //obj2->registerObject();
 
   platform->canCollide = true;
+  platform->rotation = 15;
   platform->registerObject();
  
   Window::mainLoop();

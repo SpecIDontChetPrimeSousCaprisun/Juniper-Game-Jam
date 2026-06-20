@@ -80,7 +80,7 @@ int Window::init() {
       glViewport(0, 0, width, height);
   });
 
-  music = Sound::playLoopingSound("sfx/Music.mp3");
+  //music = Sound::playLoopingSound("sfx/Music.mp3");
 
   return 0;
 }

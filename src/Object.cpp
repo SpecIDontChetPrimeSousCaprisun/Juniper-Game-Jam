@@ -388,54 +388,95 @@ void Object::update() {
   if (!anchored) {  
     linearVelocity += glm::vec2(0.0f, gravity * (float)Window::deltaTime);
 
-    position.x += linearVelocity.x * Window::deltaTime;
+    position += glm::vec2(linearVelocity.x * Window::deltaTime, linearVelocity.y * Window::deltaTime);
 
     if (canCollide) {
       for (auto& [zIndex, objectsVector] : objects) {
         for (Object* object : objectsVector) {
-          if (!(position.x < object->position.x + object->size.x &&
-                position.x + size.x > object->position.x &&
-                position.y < object->position.y + object->size.y &&
-                position.y + size.y > object->position.y)) continue;
           if (object == this) continue;
           if (!object->canCollide) continue;
+          float aRadians = rotation * glm::pi<float>() / 180.0f;
 
-          if (linearVelocity.x > 0.0f) {
-            // moving right
-            position.x = object->position.x - size.x;
-          }
-          else if (linearVelocity.x < 0.0f) {
-            // moving left
-            position.x = object->position.x + object->size.x;
-          }
+          glm::vec2 Ax(
+            std::cos(aRadians),
+            std::sin(aRadians)
+          );
 
-          linearVelocity.x = 0.0f;
-        }
-      }
-    }
+          glm::vec2 Ay(
+            -std::sin(aRadians),
+            std::cos(aRadians)
+          );
 
-    position.y += linearVelocity.y * Window::deltaTime;
+          float bRadians = object->rotation * glm::pi<float>() / 180.0f;
 
-    if (canCollide) {
-      for (auto& [zIndex, objectsVector] : objects) {
-        for (Object* object : objectsVector) {
-          if (!(position.x < object->position.x + object->size.x &&
-                position.x + size.x > object->position.x &&
-                position.y < object->position.y + object->size.y &&
-                position.y + size.y > object->position.y)) continue;
-          if (object == this) continue;
-          if (!object->canCollide) continue;
+          glm::vec2 Bx(
+            std::cos(bRadians),
+            std::sin(bRadians)
+          );
 
-          if (linearVelocity.y > 0.0f) {
-            // falling
-            position.y = object->position.y - size.y;
-          }
-          else if (linearVelocity.y < 0.0f) {
-            // moving upward
-            position.y = object->position.y + object->size.y;
-          }
+          glm::vec2 By(
+            -std::sin(bRadians),
+            std::cos(bRadians)
+          );
+ 
+          glm::vec2 WH(size.x / 2, size.y / 2);
+          glm::vec2 WHb(object->size.x / 2, object->size.y / 2);
+          glm::vec2 T = (position + WH) - (object->position + WHb);
 
-          linearVelocity.y = 0.0f;
+          auto getOverlap = [&](glm::vec2 axis) -> float {
+            float ra =
+                WH.x * std::abs(glm::dot(Ax, axis)) +
+                WH.y * std::abs(glm::dot(Ay, axis));
+
+            float rb =
+                WHb.x * std::abs(glm::dot(Bx, axis)) +
+                WHb.y * std::abs(glm::dot(By, axis));
+
+            float distance = std::abs(glm::dot(T, axis));
+
+            return (ra + rb) - distance;
+          };
+
+          float o1 = getOverlap(Ax);
+          float o2 = getOverlap(Ay);
+          float o3 = getOverlap(Bx);
+          float o4 = getOverlap(By);
+
+          float minOverlap = o1;
+          glm::vec2 bestAxis = Ax;
+
+          if (o2 < minOverlap) { minOverlap = o2; bestAxis = Ay; }
+          if (o3 < minOverlap) { minOverlap = o3; bestAxis = Bx; }
+          if (o4 < minOverlap) { minOverlap = o4; bestAxis = By; }
+          
+          if (!(o1 <= 0 || o2 <= 0 || o3 <= 0 || o4 <= 0)) {
+            glm::vec2 correction = bestAxis * minOverlap;
+            glm::vec2 centerA = position + WH;
+            glm::vec2 centerB = object->position + WHb;
+
+            glm::vec2 dir = centerA - centerB;
+
+            if (glm::dot(dir, bestAxis) < 0.0f)
+                correction = -correction;
+
+            if (object->anchored)
+              position += correction;
+            else
+            {
+              position += correction * 0.5f;
+              object->position -= correction * 0.5f;
+            }
+
+            float vn = glm::dot(linearVelocity, bestAxis);
+
+            if (vn < 0.0f)
+                linearVelocity -= vn * bestAxis;
+
+            float ovn = glm::dot(object->linearVelocity, bestAxis);
+
+            if (ovn < 0.0f)
+                object->linearVelocity -= ovn * bestAxis;
+          } 
         }
       }
     }
@@ -445,82 +486,109 @@ void Object::update() {
 }
 
 Object* Object::raycast(
-  glm::vec2 rayOrigin,
-  const glm::vec2& direction,
-  glm::vec2& hitPoint,
-  float& tHit,
-  const std::vector<Object*>& ignore
+    glm::vec2 rayOrigin,
+    const glm::vec2& direction,
+    glm::vec2& hitPoint,
+    float& tHit,
+    const std::vector<Object*>& ignore
 ) {
-  Object* closestObject = nullptr;
-  float closestT = 1.0f;
+    Object* closestObject = nullptr;
+    float closestT = 1.0f;
 
-  for (auto& [zIndex, objectsVector] : objects) {
-    for (Object* object : objectsVector) {
-      if (std::find(ignore.begin(),
-                        ignore.end(),
-                        object) != ignore.end()) continue;
-      if (!object->canCollide) continue;
+    glm::vec2 dirNorm = glm::normalize(direction);
 
-      glm::vec2 min = object->position;
-      glm::vec2 max = object->position + object->size;
+    for (auto& [zIndex, objectsVector] : objects) {
+        for (Object* object : objectsVector) {
+            if (std::find(ignore.begin(), ignore.end(), object) != ignore.end())
+                continue;
 
-      float tMin = 0.0f;
-      float tMax = 1.0f;
+            if (!object->canCollide)
+                continue;
 
-      for (int i = 0; i < 2; i++) {
-          float o = (i == 0) ? rayOrigin.x : rayOrigin.y;
-          float d = (i == 0) ? direction.x : direction.y;
-          float minVal = (i == 0) ? min.x : min.y;
-          float maxVal = (i == 0) ? max.x : max.y;
+            // =========================
+            // Build OBB basis
+            // =========================
+            float rad = object->rotation * glm::pi<float>() / 180.0f;
 
-          if (fabs(d) < 1e-8f)
-          {
-              if (o < minVal || o > maxVal)
-              {
-                  tMin = 2.0f;
-                  break;
-              }
-          }
-          else
-          {
-              float invD = 1.0f / d;
-              float t1 = (minVal - o) * invD;
-              float t2 = (maxVal - o) * invD;
+            glm::vec2 Ax(std::cos(rad), std::sin(rad));
+            glm::vec2 Ay(-std::sin(rad), std::cos(rad));
 
-              if (t1 > t2) std::swap(t1, t2);
+            // half extents
+            glm::vec2 half = object->size * 0.5f;
 
-              tMin = std::max(tMin, t1);
-              tMax = std::min(tMax, t2);
+            // center of box
+            glm::vec2 center = object->position + half;
 
-              if (tMin > tMax)
-                  break;
-          }
-      }
+            // =========================
+            // Transform ray into OBB space
+            // =========================
+            glm::vec2 relOrigin = rayOrigin - center;
 
-      // After slab loop
-      if (tMin > tMax)
-          continue;
+            glm::vec2 localOrigin(
+                glm::dot(relOrigin, Ax),
+                glm::dot(relOrigin, Ay)
+            );
 
-      if (tMax < 0.0f)
-          continue;
+            glm::vec2 localDir(
+                glm::dot(dirNorm, Ax),
+                glm::dot(dirNorm, Ay)
+            );
 
-      float t = std::max(tMin, 0.0f);
+            // =========================
+            // AABB slab test in local space
+            // =========================
+            glm::vec2 min(-half.x, -half.y);
+            glm::vec2 max( half.x,  half.y);
 
-      if (t <= 1.0f && t < closestT)
-      {
-          closestT = t;
-          closestObject = object;
-      }
+            float tMin = 0.0f;
+            float tMax = 1.0f;
+
+            for (int i = 0; i < 2; i++) {
+
+                float o = (i == 0) ? localOrigin.x : localOrigin.y;
+                float d = (i == 0) ? localDir.x : localDir.y;
+                float mn = (i == 0) ? min.x : min.y;
+                float mx = (i == 0) ? max.x : max.y;
+
+                if (fabs(d) < 1e-8f) {
+                    if (o < mn || o > mx) {
+                        tMin = 2.0f;
+                        break;
+                    }
+                } else {
+                    float invD = 1.0f / d;
+                    float t1 = (mn - o) * invD;
+                    float t2 = (mx - o) * invD;
+
+                    if (t1 > t2) std::swap(t1, t2);
+
+                    tMin = std::max(tMin, t1);
+                    tMax = std::min(tMax, t2);
+
+                    if (tMin > tMax)
+                        break;
+                }
+            }
+
+            if (tMin > tMax) continue;
+            if (tMax < 0.0f) continue;
+
+            float t = std::max(tMin, 0.0f);
+
+            if (t <= 1.0f && t < closestT) {
+                closestT = t;
+                closestObject = object;
+            }
+        }
     }
-  }
 
-  if (closestObject) {
-      tHit = closestT;
-      hitPoint = rayOrigin + direction * closestT; // ✅ use rayOrigin, not origin pointer
-      return closestObject;
-  }
+    if (closestObject) {
+        tHit = closestT;
+        hitPoint = rayOrigin + dirNorm * closestT;
+        return closestObject;
+    }
 
-  return nullptr;
+    return nullptr;
 }
 
 void Object::pendDelete() {

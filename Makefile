@@ -1,4 +1,4 @@
-PROJECT_NAME = test-project
+PROJECT_NAME = angular-velocity
 ITCHIO_USER = puroprimesouscaprisun
 
 # CXX
@@ -11,8 +11,7 @@ TARGET = game
 WIN_TARGET = publish/windows/game.exe
 WEB_TARGET = publish/web/index.html
 
-WINDOWS_DLLS = /usr/x86_64-w64-mingw32/bin/glfw3.dll \
-							 /usr/x86_64-w64-mingw32/bin/libassimp.dll \
+WINDOWS_DLLS = /usr/x86_64-w64-mingw32/usr/bin/glfw3.dll \
 							 /usr/x86_64-w64-mingw32/bin/libgcc_s_seh-1.dll \
 							 /usr/x86_64-w64-mingw32/bin/libssp-0.dll \
 							 /usr/x86_64-w64-mingw32/bin/libstdc++-6.dll \
@@ -21,7 +20,10 @@ WINDOWS_DLLS = /usr/x86_64-w64-mingw32/bin/glfw3.dll \
 
 # Flags
 CXXFLAGS = -std=c++17 -Iinclude
-WINDOWS_CXXFLAGS = -std=c++17 -Iinclude
+WINDOWS_CXXFLAGS = -std=c++17 -Iinclude \
+									 -static \
+									 -static-libgcc \
+									 -static-libstdc++
 TEST_CXXFLAGS = -Wall -Wextra
 
 WEB_CXXFLAGS = \
@@ -119,7 +121,7 @@ windows:
 	$(LIBS_WINDOWS) \
 	-mwindows
 
-web:
+web:	
 	mkdir -p publish/web
  
 	$(EMCC) \
@@ -153,7 +155,7 @@ publish: clean
 
 	# Windows
 	cp -r $(PUBLISH_SRC) publish/windows
-	cp $(WINDOWS_DLLS) publish/windows
+	#cp $(WINDOWS_DLLS) publish/windows
 
 	$(MAKE) windows
 

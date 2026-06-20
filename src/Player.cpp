@@ -40,14 +40,30 @@ void Player::update() {
   ignore.push_back(currentPlayer);
 
   Object* result = Object::raycast(
-    currentPlayer->position + glm::vec2(currentPlayer->size.x / 2, 0.0f),
+    currentPlayer->position + glm::vec2(currentPlayer->size.x * 0.5f, currentPlayer->size.y),
+    glm::vec2(0.0f, 0.5f),
+    hitPoint,
+    tHit,
+    ignore
+  );
+
+  Object* resultR = Object::raycast(
+    currentPlayer->position + glm::vec2(currentPlayer->size.x, currentPlayer->size.y),
+    glm::vec2(0.0f, 0.5f),
+    hitPoint,
+    tHit,
+    ignore
+  );
+
+  Object* resultL = Object::raycast(
+    currentPlayer->position + glm::vec2(0.0f, currentPlayer->size.y),
     glm::vec2(0.0f, 0.01f + currentPlayer->size.y),
     hitPoint,
     tHit,
     ignore
   );
 
-  if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && result && currentPlayer->state == "idle") {
+  if (glfwGetKey(Window::window, GLFW_KEY_SPACE) == GLFW_PRESS && (result || resultR || resultL)) {
     currentPlayer->linearVelocity -= glm::vec2(0.0f, 400.0f);
     currentPlayer->state = "jumping";
   
@@ -100,6 +116,6 @@ void Player::beforeUpdate() {
 
   if (state == "jumping" && linearVelocity.y >= 0.0f) {
     state = "falling";
-    gravity = 1250.0f;
+    //gravity = 1250.0f;
   }
 }
