@@ -28,7 +28,7 @@ void UIParticle::createParticles(glm::vec2 position, glm::vec2 size, float trans
   }
 }
 
-drawInfo* UIParticle::beforeDrawing(drawInfo* info) {
+drawInfo* UIParticle::beforeDrawing() {
   glm::vec2 transformedPos = position - (size * glm::vec2(0.5f, 0.5f));
 
   glm::vec2 pixelPos(transformedPos.x * Window::fbWidth, transformedPos.y * Window::fbHeight);

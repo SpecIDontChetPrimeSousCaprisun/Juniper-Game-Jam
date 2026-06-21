@@ -7,7 +7,7 @@
 #include <cmath>
 #include <thread>
 
-Player* Player::currentPlayer;
+Player* Player::currentPlayer = nullptr;
 UIElement* Player::healthBar;
 UIElement* Player::healthBarBackground;
 

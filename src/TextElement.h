@@ -22,7 +22,7 @@ public:
   bool textCentered;
 protected:
   drawInfo* baseTextBeforeDrawing();
-  drawInfo* beforeDrawing(drawInfo* info) override;
+  drawInfo* beforeDrawing() override;
   void afterDrawing(drawInfo* info) override;
 private:
   static unsigned int shaderProgram;

@@ -55,7 +55,7 @@ void Button::beforeUpdate() {
   }
 }
 
-drawInfo* Button::beforeDrawing(drawInfo* info) {
+drawInfo* Button::beforeDrawing() {
   double mouseX;
   double mouseY;
 

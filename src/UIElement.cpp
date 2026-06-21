@@ -11,11 +11,11 @@ UIElement::UIElement(glm::vec2 position, glm::vec2 size, float transparency, glm
   anchorPoint = glm::vec2(0.0f, 0.0f);
 }
 
-drawInfo* UIElement::beforeDrawing(drawInfo* info) {
-  return baseBeforeDrawing(info);
+drawInfo* UIElement::beforeDrawing() {
+  return baseBeforeDrawing();
 }
 
-drawInfo* UIElement::baseBeforeDrawing(drawInfo* info) {
+drawInfo* UIElement::baseBeforeDrawing() {
   glm::vec2 transformedPos = position - (size * anchorPoint);
 
   glm::vec2 pixelPos(transformedPos.x * Window::fbWidth, transformedPos.y * Window::fbHeight);

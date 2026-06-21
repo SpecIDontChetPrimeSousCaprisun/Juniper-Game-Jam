@@ -15,7 +15,7 @@ public:
 
   bool interactible;
 protected:
-  drawInfo* beforeDrawing(drawInfo* info) override;
+  drawInfo* beforeDrawing() override;
   void beforeUpdate() override;
 private:
   std::function<void()> callback;

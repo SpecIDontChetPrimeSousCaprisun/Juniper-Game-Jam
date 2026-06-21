@@ -40,7 +40,7 @@ int Window::init() {
   glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(fbWidth, fbHeight, "Game", NULL, NULL);
+  window = glfwCreateWindow(fbWidth, fbHeight, "Angular Velocity", NULL, NULL);
 
   if (!window)
   {

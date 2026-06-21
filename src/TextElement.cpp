@@ -165,7 +165,7 @@ TextElement::TextElement(glm::vec2 position, glm::vec2 size, float transparency,
 }
 
 drawInfo* TextElement::baseTextBeforeDrawing() {
-  drawInfo* info = baseBeforeDrawing(new drawInfo(glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+  drawInfo* info = baseBeforeDrawing();
 
   info->text = text;
   info->textColor = textColor;
@@ -173,7 +173,7 @@ drawInfo* TextElement::baseTextBeforeDrawing() {
   return info;
 }
 
-drawInfo* TextElement::beforeDrawing(drawInfo* info) {
+drawInfo* TextElement::beforeDrawing() {
   return baseTextBeforeDrawing();
 }
 
@@ -286,7 +286,7 @@ void TextElement::afterDrawing(drawInfo* info) {
 }
 
 void TextElement::recalculateTextWidth() {
-  drawInfo* info = beforeDrawing(new drawInfo(glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+  drawInfo* info = beforeDrawing();
 
   float startX = info->position.x;
 

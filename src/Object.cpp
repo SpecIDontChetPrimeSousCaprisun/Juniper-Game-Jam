@@ -275,7 +275,20 @@ Object::~Object() {
   }
 }
 
-drawInfo* Object::beforeDrawing(drawInfo* info) {
+drawInfo* Object::beforeDrawing() {
+  drawInfo* info = new drawInfo(position, size);
+
+  if (Player::currentPlayer == nullptr) {
+    info->shouldDraw = false;
+    return info;
+  }
+
+  glm::vec2 visiblePosition = position;
+
+  visiblePosition -= (Player::currentPlayer->position - (glm::vec2(Window::fbWidth, Window::fbHeight) / 2.0f)) + (Player::currentPlayer->size / 2.0f);
+
+  info->position = visiblePosition;
+
   return info;
 }
 
@@ -283,25 +296,19 @@ void Object::afterDrawing(drawInfo* info) {}
 
 void Object::draw() {
   if (!visible) return;
-  if (!Player::currentPlayer)
-    return;
-
+  
   glUseProgram(shaderProgram);
 
   // ===== MODEL =====
   glm::mat4 model = glm::mat4(1.0f);
 
-  glm::vec2 visiblePosition = position;
+  drawInfo* newInfo = beforeDrawing();
 
-  visiblePosition -= (Player::currentPlayer->position - (glm::vec2(Window::fbWidth, Window::fbHeight) / 2.0f)) + (Player::currentPlayer->size / 2.0f);
-
-  drawInfo* newInfo = beforeDrawing(new drawInfo(visiblePosition, size));
-
-  visiblePosition = newInfo->position;
+  if (!newInfo->shouldDraw) return;
 
   model = glm::translate(
       model,
-      glm::vec3(visiblePosition, 0.0f)
+      glm::vec3(newInfo->position, 0.0f)
   );
 
   // rotate around center

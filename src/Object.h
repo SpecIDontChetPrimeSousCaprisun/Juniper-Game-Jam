@@ -18,6 +18,7 @@ public:
   glm::vec2 position, size;
   std::string text;
   glm::vec3 textColor;
+  bool shouldDraw = true;
 };
 
 class Object {
@@ -51,7 +52,7 @@ public:
   bool visible, anchored, canCollide;
   int zIndex;
 protected:
-  virtual drawInfo* beforeDrawing(drawInfo* info);
+  virtual drawInfo* beforeDrawing();
   virtual void afterDrawing(drawInfo* info);
   virtual void beforeUpdate();
   virtual void afterUpdate();
