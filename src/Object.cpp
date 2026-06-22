@@ -12,6 +12,8 @@ drawInfo::drawInfo(glm::vec2 position, glm::vec2 size)
   : position(position), size(size) {}
 
 void Object::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+  if (!Player::currentPlayer) return;
+
   double mouseX;
   double mouseY;
 
@@ -19,6 +21,7 @@ void Object::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) 
 
   for (auto& [zIndex, objectsVector] : objects) {
     for (Object* object : objectsVector) {
+      if (!object->visible) continue;
       glm::vec2 visiblePosition = object->position;
 
       visiblePosition -= (Player::currentPlayer->position - (glm::vec2(Window::fbWidth, Window::fbHeight) / 2.0f)) + (Player::currentPlayer->size / 2.0f);
