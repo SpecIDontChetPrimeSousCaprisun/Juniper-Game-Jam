@@ -109,22 +109,13 @@ void MainMenu::initLevel(std::string level) {
   std::vector<Object*> objects;
 
   if (level == "Tutorial") { 
-    Object* obj2 = new Object(glm::vec2(300.0f, 0.0f), glm::vec2(100.0f, 1000.0f), 0.0f, "textures/box.png", 2);
-    Object* platform = new Object(glm::vec2(-500.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, "textures/Wallpaper.jpeg", 1);
+    Object* platform = new Object(glm::vec2(-500.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, glm::vec3(0, 0.75f, 0), 1);
+    Object* bridge = new Object(glm::vec2(750.0f, 255.0f), glm::vec2(10.0f, 500.0f), 0.0f, glm::vec3(0, 0.75f, 0), 1);
+    Object* platform2 = new Object(glm::vec2(1000.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, glm::vec3(0, 0.75f, 0), 1);
 
-    //enemy->registerObject();
-
-    //obj2->anchored = false;
-    obj2->canCollide = true;
-    obj2->linearVelocity = glm::vec2(-100.f, 0.0f);
-    obj2->rotation = 0;
-    obj2->angularVelocity = 50.0f;
-    //obj2->registerObject();
-
-    platform->canCollide = true;
-    platform->rotation = 15;
-  
     objects.push_back(platform);
+    objects.push_back(bridge);
+    objects.push_back(platform2);
   }
 
   Container* lvl = new Container(objects);
