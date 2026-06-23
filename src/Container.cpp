@@ -26,6 +26,7 @@ void Container::changeVisibility(bool visible) {
 
 void Container::changeCollisions(bool canCollide) {
   for (Object* object : objects) {
+    oldCollisions[object] = object->canCollide;
     object->canCollide = canCollide;
   }
 }
@@ -33,6 +34,12 @@ void Container::changeCollisions(bool canCollide) {
 void Container::changeCornerRadius(float radius) {
   for (Object* object : objects) {
     object->cornerRadius = radius;
+  }
+}
+
+void Container::revertCollisions() {
+  for (Object* object : objects) {
+    object->canCollide = oldCollisions[object];
   }
 }
 

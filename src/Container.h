@@ -2,6 +2,7 @@
 
 #include "Object.h"
 #include <vector>
+#include <map>
 
 class Container {
 public:
@@ -12,6 +13,7 @@ public:
   void changeVisibility(bool visible);
   void changeCollisions(bool visible);
   void changeCornerRadius(float radius);
+  void revertCollisions();
   void registerObjects();
   void clear();
   void pendDelete();
@@ -23,4 +25,5 @@ private:
   static std::vector<Container*> containers;
 
   bool pendingDelete;
+  std::map<Object*, bool> oldCollisions;
 };

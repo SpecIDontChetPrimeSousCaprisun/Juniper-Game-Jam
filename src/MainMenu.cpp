@@ -1,6 +1,7 @@
 #include "MainMenu.h"
 #include "Button.h"
 #include "Player.h"
+#include "Tutorial.h"
 
 std::map<std::string, Container*> MainMenu::initializedLevels;
 Container* MainMenu::UI;
@@ -100,7 +101,7 @@ void MainMenu::loadLevel(std::string level) {
   Player* plr = new Player(glm::vec2(0.0f, 0.0f), glm::vec2(100.0f, 100.0f), 0.0f, "textures/player.png", 2, true);
   plr->registerObject();
 
-  initializedLevels[level]->changeCollisions(true);
+  initializedLevels[level]->revertCollisions();
   initializedLevels[level]->changeVisibility(true);
   loadingUI->changeVisibility(false);
 }
@@ -112,10 +113,16 @@ void MainMenu::initLevel(std::string level) {
     Object* platform = new Object(glm::vec2(-500.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, glm::vec3(0, 0.75f, 0), 1);
     Object* bridge = new Object(glm::vec2(750.0f, 255.0f), glm::vec2(10.0f, 500.0f), 0.0f, glm::vec3(0, 0.75f, 0), 1);
     Object* platform2 = new Object(glm::vec2(1000.0f, 500.0f), glm::vec2(1000.0f, 1000.0f), 0.0f, glm::vec3(0, 0.75f, 0), 1);
+    Tutorial* tutorial = new Tutorial();
+
+    platform->canCollide = true;
+    bridge->canCollide = true;
+    platform2->canCollide = true;
 
     objects.push_back(platform);
     objects.push_back(bridge);
     objects.push_back(platform2);
+    objects.push_back(tutorial);
   }
 
   Container* lvl = new Container(objects);

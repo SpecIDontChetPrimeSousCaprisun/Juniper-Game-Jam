@@ -80,7 +80,8 @@ COMMON_SRC = \
 	src/Particle.cpp \
 	src/Enemy.cpp \
 	src/UIParticle.cpp \
-	src/MainMenu.cpp
+	src/MainMenu.cpp \
+	src/Tutorial.cpp
 
 SRC = $(COMMON_SRC) src/glad.c
 WEB_SRC = $(COMMON_SRC)
