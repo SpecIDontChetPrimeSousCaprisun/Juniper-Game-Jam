@@ -8,13 +8,13 @@
 #include "UIElement.h"
 #include "Button.h"
 #include "ScrollingElement.h"
+#include "Tutorial.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sstream>
 #include <iomanip>
 
-// REQUIRED definition (missing in your case)
 GLFWwindow* Window::window = nullptr;
 double Window::deltaTime = 0;
 int Window::fbWidth = 600;
@@ -169,6 +169,7 @@ void Window::updateFrame() {
 
   Object::registerAll();
 
+  Tutorial::update();
   Player::update();
   Object::updateAll();
 
